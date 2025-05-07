@@ -1,114 +1,145 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Money Converter',
-    
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        primarySwatch: Colors.blue,
-      ),
-      home: const MoneyConverter(),
-      debugShowCheckedModeBanner: false,
+      title: 'Flutter App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: WordLetterCounter(),
     );
   }
 }
 
-class MoneyConverter extends StatefulWidget {
-  const MoneyConverter({super.key});
-
+class WordLetterCounter extends StatefulWidget {
   @override
-  State<MoneyConverter> createState() => _MoneyConverterState();
+  _WordLetterCounterState createState() => _WordLetterCounterState();
 }
 
-class _MoneyConverterState extends State<MoneyConverter> {
-  final TextEditingController _usdController = TextEditingController();
-  String _convertedAmount = '';
-  final double _usdToBdtRate = 121.0; // Example fixed rate
+class _WordLetterCounterState extends State<WordLetterCounter> {
+  TextEditingController _controller = TextEditingController();
+  String wordCount = '0';
+  String letterCount = '0';
+  String userText = "";
+  FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  void _countWordsAndLetters() {
+    String text = _controller.text.trim();
+    List<String> words = text.split(RegExp(r'\s+'));
+    int wordTotal = words.isEmpty ? 0 : words.length;
+    int letterTotal = text.replaceAll(RegExp(r'\s+'), '').length;
+
+    setState(() {
+      userText = text;
+      wordCount = wordTotal.toString();
+      letterCount = letterTotal.toString();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Money Converter',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,),),
-        backgroundColor: Colors.blue[700],
-        
-      ),
-      body: Center(
-        child: Card(
-          elevation: 15,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Enter amount in USD',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+      backgroundColor: Colors.black,
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Container(
+            height: 500, // Set the specific height for the container
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.orange, // Orange border color
+                width: 2.0,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Title with no border around it
+                    Text(
+                      "Text Counter",
+                      style: TextStyle(
+                          fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    SizedBox(height: 40),
+                    // Card with the word count and letter count
+                    Card(
+                      color: Colors.white, // White background for the card
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Text('Your Text: $userText', style: TextStyle(fontSize: 20, color: Colors.black)),
+                            Text('Word Count: $wordCount', style: TextStyle(fontSize: 20, color: Colors.black)),
+                            Text('Letter Count: $letterCount', style: TextStyle(fontSize: 20, color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    // TextField with focus-based label text color change
+                    TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Enter Text',
+                        labelStyle: TextStyle(
+                          color: _focusNode.hasFocus ? Colors.orange : Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                          borderSide: BorderSide(color: Colors.orange, width: 2.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.orange, width: 2.0),
+                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.orange, // Color for the border when focused
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                        ),
+                      ),
+                      maxLines: 3,
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _countWordsAndLetters,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        minimumSize: Size(200, 50),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text('Count', style: TextStyle(fontSize: 14)),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _usdController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'USD',
-                    prefixIcon: Icon(Icons.attach_money),
-                    hintText: 'Enter amount in USD',
-                  ),
-                  onChanged: (value) {
-                    final usd = double.tryParse(value);
-                    if (usd != null) {
-                      setState(() {
-                        _convertedAmount = '৳ ${(usd * _usdToBdtRate).toStringAsFixed(2)}';
-                      });
-                    } else {
-                      setState(() {
-                        _convertedAmount = 'Invalid input';
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    final usd = double.tryParse(_usdController.text);
-                    if (usd != null) {
-                      setState(() {
-                        _convertedAmount = '৳ ${(usd * _usdToBdtRate).toStringAsFixed(2)}';
-                      });
-                    } else {
-                      setState(() {
-                        _convertedAmount = 'Invalid input';
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[700], // Button color
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text(
-                    'Convert to BDT',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  _convertedAmount,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              ],
+              ),
             ),
           ),
         ),
